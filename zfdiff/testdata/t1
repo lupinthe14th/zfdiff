@@ -1,0 +1,5 @@
+$ORIGIN example.com.
+$TTL    300
+@               60      AWS ALIAS   A       dns-name.elb.amazonaws.com.         ABCDEFABCDE  false
+sources         60      IN          A       192.0.2.0
+reply.sources   60      IN          MX    1 sources.example.com.
