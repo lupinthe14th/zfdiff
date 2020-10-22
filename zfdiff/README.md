@@ -27,7 +27,7 @@ SeeAlso: [cli53](https://github.com/barnybug/cli53)
 Excluding comments and blank lines in local zone files:
 
 ```
-$ grep -v '^;' example.com.zonefile.txt | grep -v '^$' > gglocal.txt
+$ grep -v '^;' example.com.zonefile.txt | grep -v '^$' > local.txt
 ```
 
 ### Differential comparison of zone files
