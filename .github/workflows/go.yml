@@ -1,6 +1,6 @@
 ---
 # SeeAlso: https://github.com/mvdan/github-actions-golang
-name: zfdiff
+name: CI
 on:
   pull_request: ~
   push:
@@ -9,7 +9,7 @@ on:
       # All other changes should go through PRs.
       - main
     paths:
-      - './zfdiff/**.go'
+      - './**.go'
 
 jobs:
   test:
@@ -26,21 +26,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Get dependencies
-        run: |
-                cd zfdiff
-                go get -v -t -d ./...
+        run: go get -v -t -d ./...
       - name: Build
-        run: |
-                cd zfdiff
-                go build -v .
+        run: go build -v .
       - name: Test
-        run: |
-                cd zfdiff
-                go test ./... -v -race -covermode=atomic -coverprofile=coverage.txt
+        run: go test ./... -v -race -covermode=atomic -coverprofile=coverage.txt
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}  # required
-          file: ./zfdiff/coverage.txt
+          file: ./coverage.txt
           flags: go
           name: Go ${{matrix.go-version}} / ${{matrix.platform}}
