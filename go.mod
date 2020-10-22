@@ -1,4 +1,4 @@
-module github.com/lupinthe14th/dns/zfdiff
+module github.com/lupinthe14th/zfdiff
 
 go 1.15
 

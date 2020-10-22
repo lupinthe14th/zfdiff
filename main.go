@@ -12,6 +12,12 @@ import (
 	"github.com/miekg/dns"
 )
 
+// These variables are set in build step
+var (
+	Version  = "unset"
+	Revision = "unset"
+)
+
 func zfDiff(a, b string) ([]string, error) {
 	out := make([]string, 0)
 
