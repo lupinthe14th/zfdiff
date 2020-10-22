@@ -8,7 +8,7 @@ dns tools repository
 
 ## tools
 
-[zfdiff](./zdiff/): Can see the difference between the information exported from the DNS records configured by Route53 and the locally managed Zone files.
+[zfdiff](./zfdiff/): Can see the difference between the information exported from the DNS records configured by Route53 and the locally managed Zone files.
 
 
 <!-- links -->
