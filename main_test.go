@@ -52,6 +52,10 @@ func TestRrList(t *testing.T) {
 			"example.com.	60	AWS	ALIAS	A dns-name.elb.amazonaws.com. ABCDEFABCDE false",
 			"sources.example.com.	60	IN	A	192.0.2.0",
 		}, wantErr: false},
+		{in: "./testdata/t3", want: []string{
+			"example.com.	300	AWS	ALIAS	A dns-name.elb.amazonaws.com. ABCDEFABCDE false",
+			"sources.example.com.	300	IN	A	192.0.2.0",
+		}, wantErr: false},
 	}
 	for i, tt := range tests {
 		i, tt := i, tt
@@ -63,35 +67,6 @@ func TestRrList(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Fatalf("in: %v got: %#v err: %v want: %#v wantErr: %v", tt.in, got, err, tt.want, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestParseRR(t *testing.T) {
-	t.Parallel()
-	type in struct {
-		s, zone, ttl string
-	}
-	tests := []struct {
-		in   in
-		want string
-	}{
-		{in: in{s: "reply.sources   60      IN          MX    1 sources.example.com.", zone: "example.com.", ttl: "300"}, want: "reply.sources.example.com.	60	IN	MX	1 sources.example.com."},
-		{in: in{s: "*        3600        IN        TXT        \"v=spf1 include:spf.example.com -all\"", zone: "example.com.", ttl: "300"}, want: "*.example.com.	3600	IN	TXT	\"v=spf1 include:spf.example.com -all\""},
-		{in: in{s: "www 300 IN A 192.0.2.0", zone: "example.com.", ttl: "300"}, want: "www.example.com.	300	IN	A	192.0.2.0"},
-		{in: in{s: "www IN A 192.0.2.0", zone: "example.com.", ttl: "300"}, want: "www.example.com.	300	IN	A	192.0.2.0"},
-		{in: in{s: "www IN A 192.0.2.0", zone: "example.com.", ttl: "60"}, want: "www.example.com.	60	IN	A	192.0.2.0"},
-		{in: in{s: "www 300 AWS ALIAS A dns-name.elb.amazonaws.com. ABCDEFABCDE false", zone: "example.com.", ttl: "60"}, want: "www.example.com.	300	AWS	ALIAS	A dns-name.elb.amazonaws.com. ABCDEFABCDE false"},
-		{in: in{s: "www AWS ALIAS A dns-name.elb.amazonaws.com. ABCDEFABCDE false", zone: "example.com.", ttl: "60"}, want: "www.example.com.	60	AWS	ALIAS	A dns-name.elb.amazonaws.com. ABCDEFABCDE false"},
-	}
-	for i, tt := range tests {
-		i, tt := i, tt
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			t.Parallel()
-			got := parseRR(tt.in.s, tt.in.zone, tt.in.ttl)
-			if got != tt.want {
-				t.Fatalf("in: %v got: %#v want: %#v ", tt.in, got, tt.want)
 			}
 		})
 	}

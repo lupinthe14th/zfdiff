@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"os"
@@ -51,7 +50,7 @@ func zfDiff(a, b string) ([]string, error) {
 
 // ZoneファイルからRRのリストを作成
 func rrList(f string) ([]string, error) {
-	out := make([]string, 0)
+	out := []string{}
 	fd, err := os.Open(f)
 	if err != nil {
 		return out, err
@@ -60,39 +59,40 @@ func rrList(f string) ([]string, error) {
 		fd.Close()
 	}()
 
-	l := 0
-	var zone, ttl string
-	scanner := bufio.NewScanner(fd)
-	for scanner.Scan() {
-		switch l {
-		case 0:
-			zone = strings.Fields(scanner.Text())[1]
-		case 1:
-			ttl = strings.Fields(scanner.Text())[1]
-		default:
-			rr := parseRR(scanner.Text(), zone, ttl)
-			out = append(out, rr)
+	z := dns.ParseZone(fd, "", "")
+	for k := range z {
+		if k.Error != nil {
+			log.Printf("error: %v", k.Error)
 		}
-		l++
-	}
-	if err := scanner.Err(); err != nil {
-		return nil, err
+		r := parseComment(k.RR, k.Comment)
+		out = append(out, r.String())
 	}
 	return out, nil
 }
 
-// SeeAlso: https://github.com/barnybug/cli53/blob/1fe271a0d2b14217aaa0d4e1e546e8b59401b9ca/commands.go#L574-L583
-func parseRR(s, zone, ttl string) string {
-	origin := fmt.Sprintf("$ORIGIN %s\n", zone)
-	defaultTTL := fmt.Sprintf("$TTL %s\n", ttl)
-	record, err := dns.NewRR(origin + defaultTTL + s)
-	if awsrr, ok := record.(*cli53.AWSRR); ok {
-		record = awsrr.RR
+// See: https://github.com/barnybug/cli53/blob/1fe271a0d2b14217aaa0d4e1e546e8b59401b9ca/bind.go#L17-L39
+func parseComment(rr dns.RR, comment string) dns.RR {
+	if strings.HasPrefix(comment, "; AWS ") {
+		kvs, err := cli53.ParseKeyValues(comment[6:])
+		if err == nil {
+			routing := kvs.GetString("routing")
+			if fn, ok := cli53.RoutingTypes[routing]; ok {
+				route := fn()
+				route.Parse(kvs)
+				rr = &cli53.AWSRR{
+					rr,
+					route,
+					kvs.GetOptString("healthCheckId"),
+					kvs.GetString("identifier"),
+				}
+			} else {
+				fmt.Printf("Warning: parse AWS extension - routing=\"%s\" not understood\n", routing)
+			}
+		} else {
+			fmt.Printf("Warning: parse AWS extension: %s", err)
+		}
 	}
-	if err != nil {
-		log.Printf("error: %v", err)
-	}
-	return record.String()
+	return rr
 }
 
 func main() {
